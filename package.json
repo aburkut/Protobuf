@@ -15,5 +15,23 @@
   "bugs": {
     "url": "https://github.com/aburkut/Protobuf/issues"
   },
-  "homepage": "https://github.com/aburkut/Protobuf#readme"
+  "homepage": "https://github.com/aburkut/Protobuf#readme",
+  "dependencies": {
+    "backbone": "^1.1.0",
+    "compression": "^1.7.3",
+    "express": "^4.16.4",
+    "google-protobuf": "^3.6.1",
+    "gulp": "^4.0.0",
+    "gulp-clean": "^0.4.0",
+    "gulp-cli": "^2.0.1",
+    "gulp-nodemon": "^2.4.1",
+    "jquery": "^3.3.1",
+    "logn": "0.0.1",
+    "protobufjs": "^6.8.8",
+    "pug": "^2.0.3",
+    "requirejs": "^2.1.9",
+    "requirejs-plugins": "^1.0.2",
+    "run-sequence": "^2.2.1",
+    "websocket": "^1.0.28"
+  }
 }
