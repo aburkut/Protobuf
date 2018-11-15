@@ -6,6 +6,7 @@ define(function (require) {
   const TestView = Backbone.View.extend({
 
     initialize: function () {
+      const _this = this;
       const Root = Protobuf.Root,
         Type  = Protobuf.Type,
         Field = Protobuf.Field
@@ -13,18 +14,25 @@ define(function (require) {
       let AwesomeMessage = new Type('AwesomeMessage').add(new Field('test_message', 1, 'string'))
       let root = new Root().define('awesomepackage').add(AwesomeMessage)
 
-
-      const payload = { test_message: '123' }
-      let message = AwesomeMessage.create(payload)
-      const buffer = AwesomeMessage.encode(message).finish()
-
       const socket = new WebSocket('ws://localhost:3000/', 'echo-protocol')
 
       socket.onopen = function() {
         console.log('WebSocket Client Connected')
 
-        console.log(`buffer = ${Array.prototype.toString.call(buffer)}`);
-        socket.send(buffer)
+        function sendMessage() {
+          if (socket.readyState === socket.OPEN) {
+            let payload = { test_message: _this.generateRandomString() }
+            let message = AwesomeMessage.create(payload)
+            let buffer = AwesomeMessage.encode(message).finish()
+
+            socket.send(buffer)
+            console.log(`message = ${JSON.stringify(message)}`);
+            console.log(`buffer = ${Array.prototype.toString.call(buffer)}`);
+            console.log('==============================================')
+            setTimeout(sendMessage, 1000)
+          }
+        }
+        sendMessage()
       };
 
       socket.onclose = function(event) {
@@ -44,10 +52,16 @@ define(function (require) {
       socket.onerror = function(error) {
         console.log(`Error: ${error.message}`)
       };
+    },
 
+    generateRandomString: function () {
+      let string = "";
+      const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-      // console.log('BUFFER: ', buffer)
-      // console.log('DECODED: ', decoded)
+      for (let i = 0; i < 5; i++)
+        string += possible.charAt(Math.floor(Math.random() * possible.length));
+
+      return string;
     },
 
     render: function () {

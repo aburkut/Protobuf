@@ -50,6 +50,7 @@ wsServer.on('request', function(request) {
 
       let decoded = AwesomeMessage.decode(message.binaryData);
       console.log(`decoded = ${JSON.stringify(decoded)}`);
+      console.log('=============================================')
 
       connection.sendBytes(message.binaryData)
     }
