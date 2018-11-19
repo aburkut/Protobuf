@@ -6,7 +6,7 @@ const nodemon = require('gulp-nodemon')
 const paths = {
   static: 'public',
   javascripts: 'assets/js',
-  json: 'assets/json',
+  proto: 'proto',
   copyNodeModules: [
     'node_modules/requirejs/require.js',
     'node_modules/backbone/backbone.js',
@@ -16,11 +16,6 @@ const paths = {
     'node_modules/long/dist/long.js',
     'node_modules/requirejs-plugins/src/json.js',
     'node_modules/requirejs-plugins/lib/text.js',
-    // 'node_modules/websocket/lib/W3CWebSocket.js',
-    // 'node_modules/websocket/lib/WebSocketClient.js',
-    // 'node_modules/typedarray-to-buffer/**/**',
-    // 'node_modules/is-typedarray/**/**',
-    // 'node_modules/google-protobuf/google-protobuf.js',
   ]
 }
 
@@ -29,9 +24,11 @@ function copy () {
   return gulp.src(`${paths.javascripts}/**/**`).pipe(gulp.dest(`${paths.static}/js`))
 }
 
-function copyJSON() {
-  return gulp.src(`${paths.json}/**/**`).pipe(gulp.dest(`${paths.static}/json`))
+
+function copyProto() {
+  return gulp.src(`${paths.proto}/**/**`).pipe(gulp.dest(`${paths.static}/proto`))
 }
+
 
 function copyNodeModules() {
   return gulp.src(paths.copyNodeModules).pipe(gulp.dest(`${paths.static}/js/lib`))
@@ -61,13 +58,13 @@ function server () {
   })
 }
 
-const build = gulp.series(clean, gulp.parallel(copy, copyJSON, copyNodeModules, server))
+const build = gulp.series(clean, gulp.parallel(copy, copyProto, copyNodeModules, server))
 
 gulp.task('default', build)
 
 
 exports.clean = clean
 exports.copy = copy
-exports.copyJSON = copyJSON
+exports.copyProto = copyProto
 exports.copyNodeModules = copyNodeModules
 exports.server = server

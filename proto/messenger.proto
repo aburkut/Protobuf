@@ -1,0 +1,252 @@
+syntax = "proto2";
+package msg_1;
+
+enum ServiceType
+{
+    UNKNOWN_SERVICE = 0;
+    MESSAGE_BROKER = 1;
+    DISCOVERY = 2;
+    SNMP_MONITORING = 3;
+    ICMP_MONITORING = 4;
+    NETFLOW_MONITORING = 5;
+    SYSLOG_MONITORING = 6;
+    AWS_MONITORING = 7;
+    WMI_MONITORING = 8;
+    HTTP_MONITORING = 9;
+    MSSQL_MONITORING = 10;
+    CONFIG_BACKUP = 11;
+    MESSENGER = 12;
+    WEB_CLIENT = 13;
+    WEB_SERVER = 14;
+}
+
+enum DestinationOption
+{
+   // Used for broadcast messages, applicable for Notifications only
+   TO_ALL = 0;
+   // Used for single destination messages only, generates AMBIGUOUS_DESTINATION_ERROR error
+   // in case of multiple registered destinations with same ServiceType 
+   TO_ONE = 1;
+}
+
+enum ErrorCode
+{
+   UNKNOWN_ERROR = 0;
+   MESSAGE_SOURCE_NOT_REGISTERED_ERROR = 1;
+   DESTINATION_NOT_REGISTERED_ERROR = 2;
+   AMBIGUOUS_DESTINATION_ERROR = 3;
+   NOT_IMPLEMENTED_ERROR = 4;
+   MALFORMED_MESSAGE_ERROR = 5;
+}
+
+// General message structure sent from Source to Destination over network.
+message Message
+{
+    // Unique id of the message (valuable for Requests only to generate Response message with same id).
+    required uint32 id = 1;
+
+    // Source of the message.
+    required MessageSource src = 2;
+
+    // Destination of the message.
+    required MessageDestination dst = 3;
+	
+    oneof message_oneof {
+        ErrorResponse error_response = 5;
+        RegisterMessageSourceRequest register_message_source_request = 10;
+        RegisterMessageSourceResponse register_message_source_response = 11;
+        GetDownDevicesRequest down_devices_request = 12;
+        GetDownDevicesResponse down_devices_response = 13;
+        GetDownInterfacesRequest down_interfaces_request = 14;
+        GetDownInterfacesResponse down_interfaces_response = 15;
+        GetDownIpv4MonitorsRequest down_ipv4_monitors_request = 16;
+        GetDownIpv4MonitorsResponse down_ipv4_monitors_response = 17;
+        GetDownAwsInstancesRequest down_aws_instances_request = 18;
+        GetDownAwsInstancesResponse down_aws_instances_response = 19;
+        GetDownWmiServersRequest down_wmi_servers_request = 20;
+        GetDownWmiServersResponse down_wmi_servers_response = 21;
+        CollectConfigBackupDevicesRequest backup_devices_request = 22;
+        CollectConfigBackupDevicesResponse backup_devices_response = 23;
+
+        EmailNotification email_notification = 100;
+        SmsNotification sms_notification = 101;
+        ServiceStatusNotification service_status_notification = 102;
+        DefaultGatewayStatusNotification default_gateway_status_notification = 110;
+        DeviceStatusNotification device_status_notification = 111;
+        InterfaceStatusNotification interface_status_notification = 112;
+        Ipv4MonitorStatusNotification ipv4_monitor_status_notification = 113;
+        AwsInstanceStatusNotification aws_instance_status_notification = 114;
+        WmiServerStatusNotification wmi_server_status_notification = 115;
+    }
+}
+
+message MessageSource
+{
+    required ServiceType service = 1;
+    // 1. Shall be filled with id received in RegisterMessageSourceResponse message
+    // 2. Shall be filled with 0 for RegisterMessageSourceRequest message
+    required uint32 id = 2;
+}
+
+message MessageDestination
+{
+    required ServiceType service = 1;
+    oneof option_oneof {
+       // Responses shall only use it, it is taken from Message.MessageSource.id of the corresponding Request
+       uint32 id = 2;
+       // Requests and Notifications shall use this option
+       DestinationOption option = 3;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Requests/responses
+
+// Common error response for some request or notification.
+message ErrorResponse
+{
+    required ErrorCode code = 1;
+    optional string message = 2;
+}
+
+// Special request to register ability to receive requests and notifications from other services. 
+// Shall be sent to MessageBroker only!
+// Registered Service type shall be taken from MessageSource field of the Message
+message RegisterMessageSourceRequest
+{
+}
+message RegisterMessageSourceResponse
+{
+    required uint32 destination_id = 1;
+}
+
+message GetDownDevicesRequest
+{
+}
+message GetDownDevicesResponse
+{
+   required bool is_ready = 1;
+   repeated uint64 devices = 2;
+}
+
+message GetDownInterfacesRequest
+{
+}
+message GetDownInterfacesResponse
+{
+    required bool is_ready = 1;
+    repeated Interface interfaces = 2;
+}
+
+message GetDownIpv4MonitorsRequest
+{
+}
+message GetDownIpv4MonitorsResponse
+{
+    required bool is_ready = 1;
+    repeated uint64 ipmonitors = 2;
+}
+
+message GetDownAwsInstancesRequest
+{
+}
+message GetDownAwsInstancesResponse
+{
+    required bool is_ready = 1;
+    repeated uint64 instances = 2;
+}
+
+message GetDownWmiServersRequest
+{
+}
+message GetDownWmiServersResponse
+{
+    required bool is_ready = 1;
+    repeated uint64 servers = 2;
+}
+
+message CollectConfigBackupDevicesRequest
+{
+   repeated uint64 devices = 1;
+}
+message CollectConfigBackupDevicesResponse
+{
+   message DeviceBackupStatus
+   {
+      required uint64 id = 1;
+      required bool is_done = 2;
+   }
+   repeated DeviceBackupStatus device_statuses = 1;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// NOTIFICATIONS
+
+message DeviceStatusNotification
+{
+   repeated uint64 devices = 1;
+   required bool is_down = 2;
+}
+
+message InterfaceStatusNotification
+{
+    repeated Interface interfaces = 1;
+    required bool is_down = 2;
+}
+
+message Ipv4MonitorStatusNotification
+{
+    repeated uint64 monitors = 1;
+    required bool is_down = 2;
+}
+
+message AwsInstanceStatusNotification
+{
+    repeated uint64 instances = 1;
+    required bool is_down = 2;
+}
+
+message WmiServerStatusNotification
+{
+    repeated uint64 servers = 1;
+    required bool is_down = 2;
+}
+
+message DefaultGatewayStatusNotification
+{
+    required bool is_down = 1;
+}
+
+message ServiceStatusNotification
+{
+    required bool is_down = 1;
+}
+
+message EmailNotification
+{
+    required uint32 id = 1;
+    required string subject = 2;
+    required string body = 3;
+    repeated string to = 4;
+}
+
+message SmsNotification
+{
+    required uint32 id = 1;
+    required string message = 2;
+    repeated string to = 3;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// COMMON STRUCTURES
+message Interface
+{
+    required uint64 dev = 1;
+    repeated uint64 itf = 2;
+}
+
+message MessageTemplateParameter
+{
+    required string id = 1;
+    required string value = 2;
+}

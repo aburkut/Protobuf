@@ -1,35 +1,56 @@
 define(function (require) {
   const Backbone = require('Backbone')
   const Protobuf = require('Protobuf')
+  const proto = require('text!../proto/messenger.proto')
 
 
   const TestView = Backbone.View.extend({
 
     initialize: function () {
       const _this = this;
-      const Root = Protobuf.Root,
-        Type  = Protobuf.Type,
-        Field = Protobuf.Field
 
-      let AwesomeMessage = new Type('AwesomeMessage').add(new Field('test_message', 1, 'string'))
-      let root = new Root().define('awesomepackage').add(AwesomeMessage)
+      const parsed = Protobuf.parse(proto).root
+      const Message = parsed.lookupType('msg_1.Message')
+      const ServiceType = parsed.lookupEnum('msg_1.ServiceType')
 
       const socket = new WebSocket('ws://localhost:3000/', 'echo-protocol')
+      socket.binaryType = 'arraybuffer';
 
       socket.onopen = function() {
         console.log('WebSocket Client Connected')
 
         function sendMessage() {
           if (socket.readyState === socket.OPEN) {
-            let payload = { test_message: _this.generateRandomString() }
-            let message = AwesomeMessage.create(payload)
-            let buffer = AwesomeMessage.encode(message).finish()
+            const payload = {
+              id: 1,
+              src: {
+                id: 1,
+                service: ServiceType.values.WEB_CLIENT,
+              },
+              dst: {
+                id: 1,
+                service: ServiceType.values.AWS_MONITORING,
+              },
+              emailNotification: {
+                id: 123,
+                subject: 'Test',
+                body: 'Test Test Test',
+                to: ['test@test.test', 'test1@test.test']
+              }
+            }
+
+            const errMsg = Message.verify(payload)
+
+            console.log('ERR MSG: ', errMsg)
+
+            let message = Message.create(payload)
+            let buffer = Message.encode(message).finish()
 
             socket.send(buffer)
-            console.log(`message = ${JSON.stringify(message)}`);
-            console.log(`buffer = ${Array.prototype.toString.call(buffer)}`);
-            console.log('==============================================')
-            setTimeout(sendMessage, 1000)
+
+            console.log(`MESSAGE: ${JSON.stringify(message)}`);
+            console.log(`BEUFFER: ${Array.prototype.toString.call(buffer)}`);
+            console.log('================================================')
           }
         }
         sendMessage()
@@ -45,23 +66,14 @@ define(function (require) {
       };
 
       socket.onmessage = function(event) {
-        console.log(`Data received: ${event.data}`)
-        console.log(event)
+        const decoded = Message.decode(new Uint8Array(event.data))
+        console.log(`RECEIVED DECODED JSON: ${JSON.stringify(decoded)}`);
+
       };
 
       socket.onerror = function(error) {
         console.log(`Error: ${error.message}`)
       };
-    },
-
-    generateRandomString: function () {
-      let string = "";
-      const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-      for (let i = 0; i < 5; i++)
-        string += possible.charAt(Math.floor(Math.random() * possible.length));
-
-      return string;
     },
 
     render: function () {
