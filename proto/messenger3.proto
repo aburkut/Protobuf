@@ -1,4 +1,4 @@
-syntax = "proto2";
+syntax = "proto3";
 package msg_1;
 
 enum ServiceType
@@ -43,16 +43,16 @@ enum ErrorCode
 message Message
 {
     // Unique id of the message (valuable for Requests only to generate Response message with same id).
-    required uint32 id = 1;
+    uint32 id = 1;
 
     // Source of the message.
-    required MessageSource src = 2;
+    MessageSource src = 2;
 
     // Destination of the message.
-    required MessageDestination dst = 3;
+    MessageDestination dst = 3;
 	
     oneof message_oneof {
-        ErrorResponse error_response = 5;
+     ErrorResponse error_response = 5;
         RegisterMessageSourceRequest register_message_source_request = 10;
         RegisterMessageSourceResponse register_message_source_response = 11;
         GetDownDevicesRequest down_devices_request = 12;
@@ -82,15 +82,15 @@ message Message
 
 message MessageSource
 {
-    required ServiceType service = 1;
+    ServiceType service = 1;
     // 1. Shall be filled with id received in RegisterMessageSourceResponse message
     // 2. Shall be filled with 0 for RegisterMessageSourceRequest message
-    required uint32 id = 2;
+    uint32 id = 2;
 }
 
 message MessageDestination
 {
-    required ServiceType service = 1;
+    ServiceType service = 1;
     oneof option_oneof {
        // Responses shall only use it, it is taken from Message.MessageSource.id of the corresponding Request
        uint32 id = 2;
@@ -105,8 +105,8 @@ message MessageDestination
 // Common error response for some request or notification.
 message ErrorResponse
 {
-    required ErrorCode code = 1;
-    optional string message = 2;
+    ErrorCode code = 1;
+    string message = 2;
 }
 
 // Special request to register ability to receive requests and notifications from other services. 
@@ -117,15 +117,16 @@ message RegisterMessageSourceRequest
 }
 message RegisterMessageSourceResponse
 {
-    required uint32 destination_id = 1;
+    uint32 destination_id = 1;
 }
 
 message GetDownDevicesRequest
 {
 }
+
 message GetDownDevicesResponse
 {
-   required bool is_ready = 1;
+   bool is_ready = 1;
    repeated uint64 devices = 2;
 }
 
@@ -134,7 +135,7 @@ message GetDownInterfacesRequest
 }
 message GetDownInterfacesResponse
 {
-    required bool is_ready = 1;
+    bool is_ready = 1;
     repeated Interface interfaces = 2;
 }
 
@@ -143,7 +144,7 @@ message GetDownIpv4MonitorsRequest
 }
 message GetDownIpv4MonitorsResponse
 {
-    required bool is_ready = 1;
+    bool is_ready = 1;
     repeated uint64 ipmonitors = 2;
 }
 
@@ -152,7 +153,7 @@ message GetDownAwsInstancesRequest
 }
 message GetDownAwsInstancesResponse
 {
-    required bool is_ready = 1;
+     bool is_ready = 1;
     repeated uint64 instances = 2;
 }
 
@@ -161,7 +162,7 @@ message GetDownWmiServersRequest
 }
 message GetDownWmiServersResponse
 {
-    required bool is_ready = 1;
+    bool is_ready = 1;
     repeated uint64 servers = 2;
 }
 
@@ -173,8 +174,8 @@ message CollectConfigBackupDevicesResponse
 {
    message DeviceBackupStatus
    {
-      required uint64 id = 1;
-      required bool is_done = 2;
+      uint64 id = 1;
+      bool is_done = 2;
    }
    repeated DeviceBackupStatus device_statuses = 1;
 }
@@ -185,55 +186,51 @@ message CollectConfigBackupDevicesResponse
 message DeviceStatusNotification
 {
    repeated uint64 devices = 1;
-   required bool is_down = 2;
+   bool is_down = 2;
 }
 
 message InterfaceStatusNotification
 {
     repeated Interface interfaces = 1;
-    required bool is_down = 2;
+    bool is_down = 2;
 }
 
 message Ipv4MonitorStatusNotification
 {
     repeated uint64 monitors = 1;
-    required bool is_down = 2;
+    bool is_down = 2;
 }
 
 message AwsInstanceStatusNotification
 {
     repeated uint64 instances = 1;
-    required bool is_down = 2;
+    bool is_down = 2;
 }
-
 message WmiServerStatusNotification
 {
     repeated uint64 servers = 1;
-    required bool is_down = 2;
+    bool is_down = 2;
 }
-
 message DefaultGatewayStatusNotification
 {
-    required bool is_down = 1;
+    bool is_down = 1;
 }
 
 message ServiceStatusNotification
 {
-    required bool is_down = 1;
+    bool is_down = 1;
 }
-
 message EmailNotification
 {
-    required uint32 id = 1;
-    required string subject = 2;
-    required string body = 3;
+    uint32 id = 1;
+    string subject = 2;
+    string body = 3;
     repeated string to = 4;
 }
-
 message SmsNotification
 {
-    required uint32 id = 1;
-    required string message = 2;
+    uint32 id = 1;
+    string message = 2;
     repeated string to = 3;
 }
 
@@ -241,12 +238,6 @@ message SmsNotification
 /// COMMON STRUCTURES
 message Interface
 {
-    required uint64 dev = 1;
+    uint64 dev = 1;
     repeated uint64 itf = 2;
-}
-
-message MessageTemplateParameter
-{
-    required string id = 1;
-    required string value = 2;
 }

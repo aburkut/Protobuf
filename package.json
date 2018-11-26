@@ -26,6 +26,7 @@
     "gulp-cli": "^2.0.1",
     "gulp-nodemon": "^2.4.1",
     "jquery": "^3.3.1",
+    "lodash": "^4.17.11",
     "logn": "0.0.1",
     "protobufjs": "^6.8.8",
     "pug": "^2.0.3",

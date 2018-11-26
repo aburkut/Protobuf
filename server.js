@@ -9,7 +9,7 @@ require.extensions['.proto'] = function (module, filename) {
   module.exports = fs.readFileSync(filename, 'utf8');
 };
 
-const messengerProto = require('./proto/messenger.proto')
+const messengerProto = require('./proto/messenger3.proto')
 
 const app = new express()
 const http = require('http').Server(app)
@@ -36,15 +36,13 @@ const wsServer = new WebSocketServer({
 
 wsServer.on('request', function(request) {
 
-  const connection = request.accept('echo-protocol', request.origin)
+  const connection = request.accept('', request.origin)
 
   console.log(`Connection accepted - ${(new Date())}`)
 
   connection.on('message', function(message) {
+    console.log('MESSAGE: ', message)
     if (message.type === 'binary') {
-      console.log(`Received Binary Message of ${message.binaryData.length} bytes`)
-      console.log(`Binary data: ${message.binaryData}`)
-
       const parsed = Protobuf.parse(messengerProto).root
       const Message = parsed.lookupType('msg_1.Message')
       const decoded = Message.decode(message.binaryData)
@@ -52,7 +50,6 @@ wsServer.on('request', function(request) {
       console.log(`DECODED: ${JSON.stringify(decoded)}`);
       console.log('=============================================')
 
-      console.log('DECODED: ', decoded)
       const buffer = Message.encode(decoded).finish()
 
       buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.length)

@@ -9,12 +9,7 @@ requirejs.config({
     _: 'lib/underscore',
     Protobuf: 'lib/protobuf',
     Long: 'lib/long',
-    json: 'lib/json',
     text: 'lib/text',
-    w3cwebsocket: 'lib/W3CWebSocket',
-    WebSocketClient: 'lib/WebSocketClient',
-    'typedarray-to-buffer': 'typedarray-to-buffer',
-    'is-typedarray': 'lib/is-typedarray/index'
   },
 
   map: {
@@ -34,12 +29,5 @@ requirejs.config({
       deps: ['jquery', '_'],
       exports: 'Backbone'
     },
-    w3cwebsocket: {
-      deps: ['WebSocketClient', 'typedarray-to-buffer', 'yaeti'],
-      exports: 'W3CWebSocket'
-    },
-    'typedarray-to-buffer': {
-      deps: ['is-typedarray']
-    }
   }
 });
